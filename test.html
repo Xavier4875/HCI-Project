@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ring Demo</title>
+</head>
+<body>
+<h1>Ring Data</h1>
+
+<!-- Connect button -->
+<button id="connectButton">Connect to Ring</button>
+
+<!-- Status display -->
+<p>Status: <span id="status">Not connected</span></p>
+
+<!-- Normalized value display -->
+<!--<p>Normalized Value: <span id="value">0</span></p>-->
+
+<script>
+let writeTarget = null;
+
+// Helper functions
+function getAllUint8Values(dataView) {
+    const values = [];
+    for (let i = 0; i < dataView.byteLength; i++) {
+        values.push(dataView.getUint8(i));
+    }
+    return values;
+}
+
+function int12(uint12) {
+    return uint12 > 2047 ? uint12 - 4096 : uint12;
+}
+
+function convertRawToG(rawValue) {
+    const rangeG = 4; // ±4G
+    return (rawValue / 2048) * rangeG;
+}
+
+// Button click handler
+document.getElementById('connectButton').addEventListener('click', async () => {
+    const statusEl = document.getElementById('status');
+    const connectButton = document.getElementById('connectButton');
+    statusEl.textContent = "Connecting...";
+    connectButton.disabled = true; // disable to prevent multiple clicks
+
+    try {
+        const device = await navigator.bluetooth.requestDevice({
+            acceptAllDevices: true,
+            optionalServices: ['de5bf728-d711-4e47-af26-65e3012a5dc7', '6e40fff0-b5a3-f393-e0a9-e50e24dcca9e']
+        });
+
+        device.addEventListener('gattserverdisconnected', () => {
+            statusEl.textContent = "Disconnected";
+            connectButton.disabled = false; // allow reconnect
+        });
+
+        const server = await device.gatt.connect();
+        statusEl.textContent = "Connected ✅";
+
+        const services = await server.getPrimaryServices();
+        for (const service of services) {
+            const characteristics = await service.getCharacteristics();
+            for (const characteristic of characteristics) {
+                if (characteristic.properties.notify || characteristic.properties.indicate) {
+                    characteristic.addEventListener('characteristicvaluechanged', (event) => {
+                        const view = new DataView(event.target.value.buffer);
+                        const value = getAllUint8Values(view);
+
+                        if (value[1] === 3) { // position data
+                            let rawY = int12((((value[2] << 4) | (value[3] & 0xf)) & 0xfff));
+                            let rawZ = int12((((value[4] << 4) | (value[5] & 0xf)) & 0xfff));
+                            let rawX = int12((((value[6] << 4) | (value[7] & 0xf)) & 0xfff));
+
+                            const Ax = convertRawToG(rawX);
+                            const Ay = convertRawToG(rawY);
+                            const Az = convertRawToG(rawZ);
+
+                            const magnitude = Math.sqrt(Ax*Ax + Ay*Ay + Az*Az);
+                            const normalized = Math.min(Math.max(magnitude / 4, 0), 1);
+
+                            document.getElementById('value').textContent = normalized.toFixed(3);
+                        }
+                    });
+                    await characteristic.startNotifications();
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Failed to connect to ring:', error);
+        statusEl.textContent = "Connection failed ❌";
+        connectButton.disabled = false;
+    }
+});
+</script>
+</body>
+</html>
