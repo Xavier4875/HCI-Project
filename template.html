@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Document</title>
+		<link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+		<div id="content">
+			<div id="title">
+				<h1>Welcome to the ring controller!</h1>
+			</div>
+			<div id="indicator">
+				<p>Value(0-1) = 1.0</p> 
+			</div>
+			<div id="control">
+				<form action="/submit" method="post">
+    					<label for="control">Choose a contrller:</label>
+    					<select id="control" name="control">
+        					<option value="">--Please choose an option--</option>
+        					<option value="ring">Ring</option>
+        					<option value="mouse">Mouse</option>
+        					<option value="keyboard">Keyboard</option>
+        					<option value="slider">Slider</option>
+    					</select>
+
+    					<br><br>
+    					<input type="submit" value="Submit">
+				</form>
+	
+			</div>
+			<div id="actuator">
+				<form action="/submit" method="post">
+    					<label for="actuator">Choose a actuator:</label>
+    					<select id="actuator" name="actuator">
+        					<option value="">--Please choose an option--</option>
+        					<option value="lightbulb">Lightbulb</option>
+        					<option value="volume">Volume</option>
+        					<option value="color">color</option>
+        					<option value="cursor">cursor</option>
+    					</select>
+
+    					<br><br>
+    					<input type="submit" value="Submit">
+				</form>
+			</div>
+		</div>
+	</body>
+</html>

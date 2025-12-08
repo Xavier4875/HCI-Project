@@ -1,0 +1,89 @@
+html, body {
+	width:100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+#content{
+	width: 90%;
+	max-width: 900px;
+	height: 90%;
+	border: 2px solid red;
+
+	padding: 10px;
+	box-sizing: border-box;
+
+	display flex;
+	justify-content: center;
+	align-items: center;
+}
+
+
+#title{
+	width: 90%;
+	height: 10%;
+	border: 2px solid blue;
+
+	padding: 10px;
+	margin: 10px;
+	box-sizing: border-box;
+
+	display flex;
+	justify-content: center;
+	align-items: center;
+}
+
+
+#indicator{
+	width: 90%;
+	height: 10%;
+	border: 2px solid blue;
+	background-color: black;
+
+	padding: 10px;
+	margin: 10px;
+	box-sizing: border-box;
+
+	display flex;
+	justify-content: center;
+	align-items: center;
+}
+
+#indicator p {
+	background-color: white;
+}
+
+
+#control{
+	width: 90%;
+	height: 10%;
+	border: 2px solid blue;
+
+	padding: 10px;
+	margin: 10px;
+	box-sizing: border-box;
+
+	display flex;
+	justify-content: center;
+	align-items: center;
+}
+
+
+#actuator{
+	width: 90%;
+	height: 10%;
+	border: 2px solid blue;
+
+	padding: 10px;
+	margin: 10px;
+	box-sizing: border-box;
+
+	display flex;
+	justify-content: center;
+	align-items: center;
+}

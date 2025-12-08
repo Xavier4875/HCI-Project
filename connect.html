@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Ring Controller</title>
+		<link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+		<div id="content">
+			<div id="title">
+				<h1>Welcome to the ring controller!</h1>
+			</div>
+
+			<div id="indicator">
+				<p>Value (0 - 1) = <span id="valueDisplay">1.0</span></p>
+			</div>
+
+			<div id="control">
+				<form>
+    				<label for="controlSelect">Choose a controller:</label>
+    				<select id="controlSelect" name="control">
+        				<option value="">--Please choose an option--</option>
+        				<option value="ring">Ring</option>
+        				<option value="mouse">Mouse</option>
+        				<option value="keyboard">Keyboard</option>
+        				<option value="slider">Slider</option>
+    				</select>
+				</form>
+
+				<button id="connectRingBtn">Connect Ring</button>
+			</div>
+
+			<div id="actuator">
+				<form>
+    				<label for="actuator">Choose an actuator:</label>
+    				<select id="actuator" name="actuator">
+        				<option value="">--Please choose an option--</option>
+        				<option value="lightbulb">Lightbulb</option>
+        				<option value="volume">Volume</option>
+        				<option value="color">Color</option>
+        				<option value="cursor">Cursor</option>
+    				</select>
+				</form>
+			</div>
+		</div>
+
+<script>
+// ================================
+// RING CONNECTION + VALUE READER
+// Outputs normalized value (0 - 1)
+// No MIDI logic involved
+// ================================
+
+let ringDevice;
+let ringCharacteristic;
+const valueDisplay = document.getElementById('valueDisplay');
+const connectBtn = document.getElementById('connectRingBtn');
+
+// These UUIDs are placeholders - replace with your ring's actual service/characteristic UUIDs
+const RING_SERVICE_UUID = '0000ffe0-0000-1000-8000-00805f9b34fb';
+const RING_CHARACTERISTIC_UUID = '0000ffe1-0000-1000-8000-00805f9b34fb';
+
+connectBtn.addEventListener('click', async () => {
+	try {
+		ringDevice = await navigator.bluetooth.requestDevice({
+			filters: [{ services: [RING_SERVICE_UUID] }]
+		});
+
+		const server = await ringDevice.gatt.connect();
+		const service = await server.getPrimaryService(RING_SERVICE_UUID);
+		ringCharacteristic = await service.getCharacteristic(RING_CHARACTERISTIC_UUID);
+
+		await ringCharacteristic.startNotifications();
+		ringCharacteristic.addEventListener('characteristicvaluechanged', handleRingData);
+
+		console.log('Ring connected');
+	} catch (error) {
+		console.error('Ring connection failed:', error);
+	}
+});
+
+function handleRingData(event) {
+	const dataView = event.target.value;
+
+	// Assuming ring sends a single byte (0-255 rotational value)
+	let rawValue = dataView.getUint8(0);
+
+	// Normalize to 0-1
+	let normalized = rawValue / 255;
+
+	// Clamp for safety
+	normalized = Math.min(1, Math.max(0, normalized));
+
+	updateValue(normalized);
+}
+
+function updateValue(val) {
+	valueDisplay.textContent = val.toFixed(3);
+
+	// Global value for your actuators to use
+	window.ringValue = val;
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ring Controller</title>
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      background-color: #f5eec8; /* beige */
+    }
+
+    #content {
+      width: 90%;
+      max-width: 900px;
+      height: 90%;
+      border: none;
+      padding: 10px;
+      box-sizing: border-box;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    h1 {
+      margin: 0;
+      text-align: center;
+    }
+
+    #indicator, .section {
+      width: 90%;
+      height: auto;
+      border: none;
+      padding: 10px;
+      margin: 10px;
+      box-sizing: border-box;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #indicator {
+      background-color: black;
+      color: white;
+      font-size: 1.2rem;
+    }
+
+    #indicator p {
+      background-color: white;
+      color: black;
+      padding: 5px;
+    }
+
+    select {
+      padding: 5px;
+      margin-left: 10px;
+    }
+
+    button {
+      margin-left: 10px;
+      padding: 6px 12px;
+    }
+</style>
+</head>
+<body>
+  <div id="content">
+    <h1>Welcome to the Ring Controller!</h1>
+
+    <div id="indicator">Value (0-1): <span id="valueDisplay">1.0</span></div>
+
+    <div class="section">
+      <label for="controlSelect">Choose a controller:</label>
+      <select id="controlSelect">
+        <option value="">--Please choose an option--</option>
+        <option value="ring">Ring</option>
+        <option value="mouse">Mouse</option>
+        <option value="keyboard">Keyboard</option>
+        <option value="slider">Slider</option>
+      </select>
+      <button onclick="submitControl()">Submit Controller</button>
+    </div>
+
+    <div class="section">
+      <label for="actuatorSelect">Choose an actuator:</label>
+      <select id="actuatorSelect">
+        <option value="">--Please choose an option--</option>
+        <option value="lightbulb">Lightbulb</option>
+        <option value="volume">Volume</option>
+        <option value="color">Color</option>
+        <option value="cursor">Cursor</option>
+      </select>
+      <button onclick="submitActuator()">Submit Actuator</button>
+    </div>
+
+    <div class="section" id="dynamicControl"></div>
+  </div>
+
+  <script>
+    const valueDisplay = document.getElementById('valueDisplay');
+    const dynamicControl = document.getElementById('dynamicControl');
+
+    function submitControl() {
+      const type = document.getElementById('controlSelect').value;
+      dynamicControl.innerHTML = '';
+
+      if (type === 'slider') {
+        createSlider();
+      } else if (type === 'keyboard') {
+        dynamicControl.innerHTML = '<p>Use arrow keys to change value.</p>';
+        enableKeyboard();
+      } else if (type === 'mouse') {
+        dynamicControl.innerHTML = '<p>Scroll to adjust value.</p>';
+        enableMouse();
+      } else {
+        dynamicControl.innerHTML = '<p>No dynamic controls for this controller.</p>';
+      }
+    }
+
+    function submitActuator() {
+      alert('Actuator set to: ' + document.getElementById('actuatorSelect').value);
+    }
+
+    function createSlider() {
+      const slider = document.createElement('input');
+      slider.type = 'range';
+      slider.min = 0;
+      slider.max = 1;
+      slider.step = 0.01;
+      slider.value = parseFloat(valueDisplay.textContent);
+      slider.oninput = () => updateValue(slider.value);
+      dynamicControl.appendChild(slider);
+    }
+
+    function enableKeyboard() {
+      document.onkeydown = (e) => {
+        let current = parseFloat(valueDisplay.textContent);
+        if (e.key === 'ArrowUp') current = Math.min(1, current + 0.05);
+        if (e.key === 'ArrowDown') current = Math.max(0, current - 0.05);
+        updateValue(current);
+      };
+    }
+
+    function enableMouse() {
+      document.onwheel = (e) => {
+        let current = parseFloat(valueDisplay.textContent);
+        current += e.deltaY > 0 ? -0.05 : 0.05;
+        current = Math.max(0, Math.min(1, current));
+        updateValue(current);
+      };
+    }
+
+    function updateValue(v) {
+      const val = parseFloat(v);
+      valueDisplay.textContent = val.toFixed(2);
+
+      // Map 0 → black (0), 1 → white (255)
+      const shade = Math.round(val * 255);
+      const indicator = document.getElementById('indicator');
+      indicator.style.backgroundColor = `rgb(${shade}, ${shade}, ${shade})`;
+
+      // Adjust text color for contrast
+      indicator.style.color = shade > 128 ? 'black' : 'white';
+    }
+  </script>
+</body>
+</html>
+
